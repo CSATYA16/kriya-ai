@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>KRIYA — From Intent to Action</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #09090f;
+      --surface:    #0f1017;
+      --card:       #141520;
+      --card2:      #1a1c2e;
+      --card3:      #1f2138;
+      --border:     rgba(255,255,255,0.06);
+      --border2:    rgba(255,255,255,0.11);
+      --border3:    rgba(255,255,255,0.16);
+      --violet:     #7c5cfc;
+      --violet2:    #9f7ffe;
+      --blue:       #5b8af5;
+      --blue2:      #7ba7ff;
+      --green:      #34d399;
+      --red:        #f87171;
+      --yellow:     #fbbf24;
+      --text:       #e2e8f0;
+      --text2:      #94a3b8;
+      --text3:      #4a5568;
+      --phone-w:    375px;
+      --phone-h:    800px;
+      --shadow:     0 40px 100px rgba(0,0,0,0.7);
+      --glow:       0 0 40px rgba(124,92,252,0.15);
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ─── VERSION BADGE ───────────────────────────────────────────────── */
+    .version-badge {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 1000; display: flex; align-items: center; gap: 7px;
+      padding: 5px 14px;
+      background: rgba(124,92,252,0.12);
+      border: 1px solid rgba(124,92,252,0.25);
+      border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--violet2); text-transform: uppercase;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      white-space: nowrap;
+    }
+    .badge-dot {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--green);
+      animation: pulse-dot 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.6)} }
+
+    /* ─── STAGE ───────────────────────────────────────────────────────── */
+    .stage {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      padding: 80px 24px 60px; gap: 56px;
+    }
+
+    /* ─── HEADLINE ─────────────────────────────────────────────────────── */
+    .headline { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .headline-logo {
+      font-size: 32px; font-weight: 900; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--violet2), var(--blue2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .headline-tagline {
+      font-size: 12px; font-weight: 600; letter-spacing: 0.14em;
+      color: var(--text3); text-transform: uppercase;
+    }
+
+    /* ─── DEVICES ROW ──────────────────────────────────────────────────── */
+    .devices-row {
+      display: flex; align-items: flex-start; justify-content: center;
+      gap: 48px; width: 100%; max-width: 1220px; flex-wrap: wrap;
+    }
+
+    /* ─── ARROW ────────────────────────────────────────────────────────── */
+    .connection-arrow {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 8px; padding-top: 160px;
+      opacity: 0.2; transition: opacity 0.5s ease; flex-shrink: 0;
+    }
+    .connection-arrow.active { opacity: 1; }
+    .arrow-line { width: 2px; height: 50px; background: linear-gradient(to bottom, transparent, var(--violet), transparent); }
+    .arrow-dots { display: flex; flex-direction: column; gap: 4px; }
+    .arrow-dots span {
+      width: 5px; height: 5px; border-radius: 50%; background: var(--violet);
+      animation: flow-dot 1.6s ease-in-out infinite;
+    }
+    .arrow-dots span:nth-child(2) { animation-delay: 0.25s; }
+    .arrow-dots span:nth-child(3) { animation-delay: 0.5s; }
+    @keyframes flow-dot { 0%,100%{opacity:.15} 50%{opacity:1} }
+    .arrow-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: var(--violet); text-transform: uppercase; }
+
+    /* ─── PHONE SHELL ─────────────────────────────────────────────────── */
+    .phone-shell {
+      width: var(--phone-w); min-height: var(--phone-h);
+      background: #0c0d15; border-radius: 52px;
+      border: 1.5px solid rgba(255,255,255,0.09);
+      box-shadow: var(--shadow), var(--glow), inset 0 1px 0 rgba(255,255,255,0.06);
+      overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .phone-notch {
+      width: 110px; height: 26px; background: #0c0d15;
+      border-radius: 0 0 18px 18px; margin: 0 auto;
+      position: relative; z-index: 10;
+    }
+    .phone-status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 24px 0; font-size: 11px; font-weight: 600; color: var(--text3);
+    }
+    .status-icons { display: flex; gap: 5px; align-items: center; font-size: 10px; }
+
+    /* ─── PHONE SCREENS ────────────────────────────────────────────────── */
+    .phone-screen { display: none; flex-direction: column; height: calc(var(--phone-h) - 56px); overflow: hidden; }
+    .phone-screen.active { display: flex; }
+    .phone-content { flex: 1; overflow-y: auto; padding: 18px 18px 28px; scrollbar-width: none; }
+    .phone-content::-webkit-scrollbar { display: none; }
+
+    /* ─── SCREEN: HOME ─────────────────────────────────────────────────── */
+    .home-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 28px;
+    }
+    .home-logo {
+      font-size: 20px; font-weight: 900; letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--violet2), var(--blue2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .home-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: #fff;
+    }
+
+    /* Connection chip */
+    .conn-chip {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 13px; border-radius: 100px;
+      font-size: 11px; font-weight: 600; margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+    .conn-chip.connected    { background: rgba(52,211,153,.08);  border: 1px solid rgba(52,211,153,.2);  color: var(--green); }
+    .conn-chip.connecting   { background: rgba(251,191,36,.08);  border: 1px solid rgba(251,191,36,.2);  color: var(--yellow); }
+    .conn-chip.disconnected { background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2); color: var(--red); }
+    .conn-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .conn-chip.connected    .conn-dot { background: var(--green); animation: pulse-dot 2s ease-in-out infinite; }
+    .conn-chip.connecting   .conn-dot { background: var(--yellow); animation: pulse-dot 1.2s ease-in-out infinite; }
+    .conn-chip.disconnected .conn-dot { background: var(--red); }
+
+    /* Server setup */
+    .server-setup {
+      display: none; margin-bottom: 16px;
+      padding: 12px; border-radius: 14px;
+      background: rgba(251,191,36,.06); border: 1px solid rgba(251,191,36,.2);
+    }
+    .server-setup.visible { display: block; }
+    .server-setup-label { font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--yellow); margin-bottom: 8px; }
+    .server-setup-row { display: flex; gap: 8px; align-items: center; }
+    .server-url-input {
+      flex: 1; background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 9px; padding: 7px 11px;
+      color: var(--text); font-size: 12px; font-family: "SF Mono","Fira Code",monospace;
+      outline: none; min-width: 0;
+    }
+    .server-url-input:focus { border-color: var(--violet); }
+    .server-connect-btn {
+      padding: 7px 13px; background: linear-gradient(135deg, var(--violet), var(--blue));
+      border: none; border-radius: 9px; color: #fff;
+      font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;
+      transition: opacity .15s;
+    }
+    .server-connect-btn:hover { opacity: .85; }
+
+    /* Hero input */
+    .hero-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .09em;
+      text-transform: uppercase; color: var(--text3); margin-bottom: 10px;
+    }
+    .hero-textarea {
+      width: 100%; background: var(--card2);
+      border: 1px solid var(--border2); border-radius: 16px;
+      padding: 14px 16px; color: var(--text); font-size: 15px;
+      font-family: inherit; resize: none; outline: none;
+      min-height: 90px; line-height: 1.55;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .hero-textarea:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(124,92,252,.12); }
+    .hero-textarea::placeholder { color: var(--text3); }
+
+    /* Input actions */
+    .input-actions { display: flex; gap: 8px; margin-top: 10px; }
+    .icon-btn {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--card2); border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 17px;
+      transition: all .15s; flex-shrink: 0;
+    }
+    .icon-btn:hover { background: var(--card3); border-color: var(--violet); transform: scale(1.05); }
+    .icon-btn.recording { background: rgba(248,113,113,.15); border-color: rgba(248,113,113,.4); animation: pulse-dot 1s ease-in-out infinite; }
+
+    .send-btn {
+      flex: 1; height: 42px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      border: none; border-radius: 12px; color: #fff;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      letter-spacing: .01em;
+      transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .send-btn:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,92,252,.35); }
+    .send-btn:active { transform: translateY(0); }
+
+    /* Example chips */
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text3); margin-bottom: 10px; margin-top: 24px;
+    }
+    .examples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 0; }
+    .example-chip {
+      padding: 10px 12px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; font-size: 11px; color: var(--text2);
+      cursor: pointer; transition: all .15s; display: flex; align-items: flex-start; gap: 8px;
+      line-height: 1.4;
+    }
+    .example-chip:hover { background: var(--card2); border-color: rgba(124,92,252,.3); color: var(--text); }
+    .example-chip:active { transform: scale(.97); }
+    .chip-icon { font-size: 15px; flex-shrink: 0; margin-top: 0; }
+
+    /* Recent workflows */
+    .recent-list { display: flex; flex-direction: column; gap: 7px; }
+    .recent-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 12px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 13px; cursor: pointer; transition: all .15s;
+    }
+    .recent-item:hover { background: var(--card2); border-color: var(--border2); }
+    .recent-icon {
+      width: 34px; height: 34px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+      background: rgba(124,92,252,.15);
+    }
+    .recent-meta { flex: 1; min-width: 0; }
+    .recent-name { font-size: 12px; font-weight: 600; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .recent-time { font-size: 10px; color: var(--text3); }
+    .recent-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 100px; background: rgba(52,211,153,.12); color: var(--green); flex-shrink: 0; }
+
+    /* ─── SCREEN: UNDERSTANDING ────────────────────────────────────────── */
+    .understanding-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 28px; gap: 28px;
+    }
+    .understanding-orb {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      display: flex; align-items: center; justify-content: center; font-size: 34px;
+      animation: orb-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes orb-pulse {
+      0%,100%{ box-shadow: 0 0 0 0 rgba(124,92,252,.4), 0 0 0 20px rgba(124,92,252,0); }
+      50%    { box-shadow: 0 0 0 12px rgba(124,92,252,.15), 0 0 0 30px rgba(124,92,252,.04); }
+    }
+    .understanding-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; text-align: center; }
+    .understanding-sub { font-size: 13px; color: var(--text2); text-align: center; }
+    .proc-steps { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .proc-step {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; font-size: 12px; opacity: 0.3;
+      transition: all .4s ease;
+    }
+    .proc-step.active { opacity: 1; border-color: rgba(124,92,252,.3); background: rgba(124,92,252,.06); }
+    .proc-step.done   { opacity: 1; border-color: rgba(52,211,153,.25); }
+    .proc-step-icon { font-size: 15px; flex-shrink: 0; }
+    .proc-spinner {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 2px solid rgba(124,92,252,.25); border-top-color: var(--violet);
+      animation: spin .8s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── SCREEN: PLAN ─────────────────────────────────────────────────── */
+    .plan-screen-wrap { padding: 18px 18px 28px; overflow-y: auto; flex: 1; scrollbar-width: none; }
+    .plan-screen-wrap::-webkit-scrollbar { display: none; }
+
+    .plan-top-bar {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+    }
+    .plan-kriya-badge {
+      font-size: 13px; font-weight: 900; letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--violet2), var(--blue2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .plan-safe-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 10px; font-weight: 700; color: var(--green);
+      padding: 4px 10px; background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.2);
+      border-radius: 100px; letter-spacing: .04em;
+    }
+
+    .plan-headline { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 4px; }
+    .plan-caption { font-size: 12px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+
+    .plan-card {
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 18px; overflow: hidden; margin-bottom: 16px;
+    }
+    .plan-card-header {
+      padding: 13px 16px; border-bottom: 1px solid var(--border);
+      background: rgba(124,92,252,.05);
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text3);
+    }
+    .plan-card-steps { padding: 4px 0; }
+    .plan-step-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+    }
+    .plan-step-row:last-child { border-bottom: none; }
+    .plan-step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--card2); border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 800; color: var(--violet2); flex-shrink: 0;
+    }
+    .plan-step-info { flex: 1; }
+    .plan-step-name { font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+    .plan-step-detail { font-size: 11px; color: var(--text3); }
+    .plan-step-icon { font-size: 17px; flex-shrink: 0; }
+
+    .plan-meta-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px; font-size: 12px; color: var(--text3);
+    }
+    .plan-meta-count strong { color: var(--text2); }
+
+    .plan-actions { display: flex; gap: 10px; }
+    .plan-cancel-btn {
+      padding: 14px 20px; background: var(--card); border: 1px solid var(--border2);
+      border-radius: 14px; color: var(--text2); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .plan-cancel-btn:hover { background: var(--card2); color: var(--text); }
+    .plan-approve-btn {
+      flex: 1; padding: 14px;
+      background: linear-gradient(135deg, #059669, var(--green));
+      border: none; border-radius: 14px; color: #fff;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      letter-spacing: .01em; transition: all .2s;
+    }
+    .plan-approve-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(52,211,153,.35); }
+    .plan-approve-btn:active { transform: translateY(0); }
+
+    /* ─── SCREEN: EXECUTING ────────────────────────────────────────────── */
+    .executing-screen { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .executing-header {
+      padding: 18px 18px 14px; border-bottom: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .executing-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--text3);
+    }
+    .executing-title { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+    .executing-progress-row {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; color: var(--text3);
+    }
+    .exec-progress-bar-wrap { flex: 1; height: 3px; background: var(--card2); border-radius: 100px; overflow: hidden; margin: 0 12px; }
+    .exec-progress-bar { height: 100%; border-radius: 100px; background: linear-gradient(90deg, var(--violet), var(--blue)); width: 0%; transition: width .5s ease; }
+
+    .executing-steps-wrap { flex: 1; overflow-y: auto; padding: 12px 18px; scrollbar-width: none; display: flex; flex-direction: column; gap: 6px; }
+    .executing-steps-wrap::-webkit-scrollbar { display: none; }
+
+    .exec-step {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 13px;
+      border: 1px solid var(--border); background: var(--card);
+      transition: all .35s ease;
+    }
+    .exec-step.done    { border-color: rgba(52,211,153,.25); background: rgba(52,211,153,.04); }
+    .exec-step.running { border-color: rgba(124,92,252,.3); background: rgba(124,92,252,.06); }
+    .exec-step.failed  { border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.05); }
+    .exec-step.pending { opacity: 0.4; }
+
+    .exec-step-idx {
+      font-size: 10px; font-weight: 800; color: var(--text3);
+      width: 20px; flex-shrink: 0; text-align: right;
+    }
+    .exec-step-status { font-size: 16px; flex-shrink: 0; line-height: 1; }
+    .exec-step-spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(124,92,252,.25); border-top-color: var(--violet);
+      animation: spin .8s linear infinite; flex-shrink: 0;
+    }
+    .exec-step-name { flex: 1; font-size: 13px; font-weight: 500; }
+    .exec-step.done    .exec-step-name { color: var(--green); }
+    .exec-step.running .exec-step-name { color: var(--text); font-weight: 600; }
+    .exec-step.failed  .exec-step-name { color: var(--red); }
+
+    .executing-footer { padding: 12px 18px 18px; }
+    .cancel-workflow-btn {
+      width: 100%; padding: 13px;
+      background: transparent; border: 1px solid var(--border2);
+      border-radius: 13px; color: var(--text3); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .cancel-workflow-btn:hover { border-color: var(--red); color: var(--red); background: rgba(248,113,113,.05); }
+
+    /* ─── SCREEN: PAUSED (failure) ─────────────────────────────────────── */
+    .paused-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px; gap: 20px;
+    }
+    .paused-icon { font-size: 48px; }
+    .paused-title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; text-align: center; }
+    .paused-msg { font-size: 13px; color: var(--text2); text-align: center; line-height: 1.5; max-width: 280px; }
+    .paused-step-info {
+      width: 100%; padding: 13px 16px;
+      background: rgba(248,113,113,.07); border: 1px solid rgba(248,113,113,.2);
+      border-radius: 13px; font-size: 12px; color: var(--red); text-align: center;
+    }
+    .paused-actions { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .retry-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      border: none; border-radius: 13px; color: #fff;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .retry-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,92,252,.35); }
+    .cancel-paused-btn {
+      width: 100%; padding: 14px;
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 13px; color: var(--text2); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .cancel-paused-btn:hover { background: var(--card2); color: var(--text); }
+
+    /* ─── SCREEN: COMPLETE ─────────────────────────────────────────────── */
+    .complete-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px; gap: 18px;
+    }
+    .complete-orb {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(52,211,153,.12); border: 2px solid rgba(52,211,153,.4);
+      display: flex; align-items: center; justify-content: center; font-size: 30px;
+      animation: complete-pop .5s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @keyframes complete-pop { from{transform:scale(0.3);opacity:0} to{transform:scale(1);opacity:1} }
+    .complete-title { font-size: 22px; font-weight: 900; letter-spacing: -0.03em; text-align: center; }
+    .complete-sub { font-size: 13px; color: var(--text2); text-align: center; max-width: 260px; line-height: 1.5; }
+    .complete-steps-done {
+      width: 100%; background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .complete-steps-header {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text3);
+    }
+    .complete-step-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--green);
+    }
+    .complete-step-row:last-child { border-bottom: none; }
+    .complete-actions { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+    .done-btn-primary {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      border: none; border-radius: 13px; color: #fff;
+      font-size: 14px; font-weight: 700; cursor: pointer; transition: all .2s;
+    }
+    .done-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,92,252,.35); }
+    .done-btn-secondary {
+      width: 100%; padding: 14px;
+      background: var(--card); border: 1px solid var(--border2);
+      border-radius: 13px; color: var(--text); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .done-btn-secondary:hover { background: var(--card2); }
+
+    /* ─── SCREEN: APPROVAL (single-action) ─────────────────────────────── */
+    .approval-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 20px; gap: 18px;
+    }
+    .approval-intro { text-align: center; }
+    .approval-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); margin-bottom: 5px; }
+    .approval-headline { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; }
+    .approval-card {
+      width: 100%; background: var(--card); border: 1px solid var(--border2);
+      border-radius: 20px; overflow: hidden;
+    }
+    .approval-card-header {
+      display: flex; align-items: center; gap: 10px; padding: 13px 16px;
+      background: rgba(124,92,252,.06); border-bottom: 1px solid var(--border);
+    }
+    .approval-card-icon { font-size: 20px; }
+    .approval-card-title { font-size: 13px; font-weight: 700; }
+    .approval-body { padding: 18px 16px 14px; display: flex; flex-direction: column; gap: 8px; }
+    .approval-type-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--text3); }
+    .approval-name { font-size: 28px; font-weight: 900; letter-spacing: -0.03em; }
+    .approval-detail { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+    .detail-chip {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 2px 8px;
+      font-family: "SF Mono","Fira Code",monospace; font-size: 11px; color: var(--text);
+    }
+    .approval-divider { height: 1px; background: var(--border); margin: 4px 0; }
+    .approval-security {
+      font-size: 11px; color: var(--text3); line-height: 1.5;
+      display: flex; align-items: flex-start; gap: 6px;
+    }
+    .approval-btns { display: flex; gap: 8px; padding: 0 16px 16px; }
+    .approval-cancel-btn {
+      padding: 13px 18px; background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 13px; color: var(--text2); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all .15s;
+    }
+    .approval-cancel-btn:hover { background: var(--card); color: var(--text); }
+    .approval-approve-btn {
+      flex: 1; padding: 13px;
+      background: linear-gradient(135deg, #059669, var(--green));
+      border: none; border-radius: 13px; color: #fff;
+      font-size: 14px; font-weight: 800; cursor: pointer;
+      letter-spacing: .01em; transition: all .2s;
+    }
+    .approval-approve-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(52,211,153,.35); }
+
+    /* ─── SCREEN: EXECUTING (single action) ────────────────────────────── */
+    .single-working-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px; gap: 20px;
+    }
+    .single-spinner {
+      width: 52px; height: 52px; border-radius: 50%;
+      border: 3px solid rgba(124,92,252,.2); border-top-color: var(--violet);
+      animation: spin .8s linear infinite;
+    }
+    .single-working-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; text-align: center; }
+    .single-working-sub   { font-size: 13px; color: var(--text2); text-align: center; }
+
+    /* ─── SCREEN: SINGLE DONE ──────────────────────────────────────────── */
+    .single-done-screen {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px; gap: 18px;
+    }
+
+    /* ─── SCREEN: CAMERA PREVIEW ───────────────────────────────────────── */
+    .camera-screen {
+      flex: 1; display: flex; flex-direction: column; padding: 18px; gap: 14px;
+      overflow-y: auto;
+    }
+    .camera-screen h2 { font-size: 17px; font-weight: 800; }
+    .camera-preview-img {
+      width: 100%; max-height: 220px; object-fit: cover;
+      border-radius: 14px; border: 1px solid var(--border2);
+    }
+    .camera-status { font-size: 13px; color: var(--text2); line-height: 1.5; }
+    .camera-spinner-row { display: flex; align-items: center; gap: 8px; color: var(--violet2); font-size: 13px; }
+    .camera-prompt-input {
+      width: 100%; background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 12px; padding: 12px 14px; color: var(--text); font-size: 14px;
+      font-family: inherit; resize: none; outline: none; min-height: 80px; line-height: 1.5;
+      display: none; transition: border-color .2s;
+    }
+    .camera-prompt-input:focus { border-color: var(--violet); }
+    .camera-buttons { display: flex; gap: 10px; }
+    .camera-retake-btn {
+      flex: 1; background: var(--card2); color: var(--text); border: 1px solid var(--border2);
+      padding: 13px; border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 600;
+      transition: all .15s;
+    }
+    .camera-retake-btn:hover { background: var(--card3); }
+    .camera-use-btn {
+      flex: 2; background: linear-gradient(135deg, var(--violet), var(--blue));
+      color: #fff; border: none; padding: 13px; border-radius: 12px;
+      cursor: pointer; font-size: 13px; font-weight: 700; transition: all .2s;
+    }
+    .camera-use-btn:hover { opacity: .9; }
+
+    /* ─── LAPTOP SHELL ─────────────────────────────────────────────────── */
+    .laptop-wrap { display: flex; flex-direction: column; align-items: center; }
+    .laptop-body {
+      width: 700px; background: #0e1018; border-radius: 16px 16px 0 0;
+      border: 1.5px solid rgba(255,255,255,.09); border-bottom: none;
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .laptop-camera { display: flex; justify-content: center; padding: 10px; }
+    .cam-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.15); }
+    .laptop-screen { background: #0b0c14; min-height: 460px; position: relative; overflow: hidden; }
+    .laptop-base { width: 760px; height: 18px; background: linear-gradient(180deg, #1a1c26, #131519); border-radius: 0 0 12px 12px; border: 1.5px solid rgba(255,255,255,.07); border-top: none; }
+    .laptop-foot { width: 320px; height: 5px; background: #0d0f13; border-radius: 0 0 8px 8px; border: 1px solid rgba(255,255,255,.04); border-top: none; }
+
+    .laptop-topbar {
+      display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+      background: rgba(255,255,255,.025); border-bottom: 1px solid var(--border);
+    }
+    .traffic-lights { display: flex; gap: 6px; }
+    .tl { width: 11px; height: 11px; border-radius: 50%; }
+    .tl.red    { background: #ff5f57; }
+    .tl.yellow { background: #febc2e; }
+    .tl.green  { background: #28c840; }
+    .url-bar {
+      flex: 1; background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 8px; padding: 4px 12px; font-size: 11px; color: var(--text3); text-align: center;
+    }
+
+    .laptop-content {
+      padding: 20px; height: 400px; overflow-y: auto;
+      scrollbar-width: thin; scrollbar-color: var(--card2) transparent;
+    }
+    .laptop-progress-bar {
+      height: 2px; background: linear-gradient(90deg, var(--violet), var(--blue));
+      width: 0%; transition: width .6s ease; position: absolute; top: 0; left: 0; z-index: 5;
+    }
+
+    /* Laptop idle */
+    .laptop-idle { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; opacity: .25; text-align: center; }
+    .laptop-idle .idle-icon { font-size: 38px; }
+    .laptop-idle p { font-size: 13px; color: var(--text2); }
+
+    /* Laptop connected banner */
+    .laptop-conn-banner {
+      display: none; align-items: center; justify-content: space-between;
+      padding: 10px 14px; background: rgba(124,92,252,.07);
+      border: 1px solid rgba(124,92,252,.18); border-radius: 12px; margin-bottom: 16px;
+    }
+    .laptop-conn-banner.visible { display: flex; animation: fade-in .3s ease; }
+    .conn-banner-left { display: flex; align-items: center; gap: 10px; }
+    .conn-banner-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      display: flex; align-items: center; justify-content: center; font-size: 14px;
+    }
+    .conn-banner-title { font-size: 12px; font-weight: 700; }
+    .conn-banner-sub   { font-size: 10px; color: var(--text2); }
+    .conn-banner-live  { font-size: 10px; font-weight: 700; color: var(--green); display: flex; align-items: center; gap: 4px; }
+
+    /* Laptop workspace panel */
+    .workspace-panel { display: none; flex-direction: column; gap: 14px; }
+    .workspace-panel.visible { display: flex; animation: fade-in .3s ease; }
+    .ws-header { display: flex; align-items: center; justify-content: space-between; }
+    .ws-title { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; }
+    .ws-badge {
+      font-size: 10px; font-weight: 700; color: var(--yellow);
+      padding: 4px 10px; background: rgba(251,191,36,.1); border-radius: 100px;
+    }
+
+    /* Terminal */
+    .terminal-window {
+      background: #08090d; border: 1px solid rgba(255,255,255,.07); border-radius: 12px; overflow: hidden;
+    }
+    .terminal-header {
+      display: flex; align-items: center; gap: 7px; padding: 8px 12px;
+      background: rgba(255,255,255,.025); border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .terminal-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.12); }
+    .terminal-label { font-size: 11px; color: var(--text3); font-family: "SF Mono","Fira Code",monospace; }
+    .terminal-body {
+      padding: 12px 14px; font-family: "SF Mono","Fira Code","Cascadia Code",monospace;
+      font-size: 12px; line-height: 1.7; min-height: 120px;
+    }
+    .terminal-line { display: flex; align-items: baseline; gap: 8px; opacity: 0; transform: translateY(3px); transition: all .25s ease; }
+    .terminal-line.show { opacity: 1; transform: translateY(0); }
+    .t-prompt { color: var(--violet2); }
+    .t-text   { color: #c8d6e5; }
+    .t-text.green  { color: var(--green); }
+    .t-text.yellow { color: var(--yellow); }
+    .t-text.dim    { color: var(--text3); }
+    .terminal-cursor {
+      display: inline-block; width: 7px; height: 13px;
+      background: var(--violet); animation: blink 1s step-end infinite;
+      vertical-align: middle; border-radius: 1px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* Workspace explorer */
+    .ws-explorer { display: none; flex-direction: column; gap: 16px; animation: fade-slide .35s ease both; }
+    .ws-explorer.visible { display: flex; }
+    .ws-explorer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .ws-explorer-titles { display: flex; flex-direction: column; gap: 3px; }
+    .ws-explorer-title { font-size: 19px; font-weight: 800; letter-spacing: -0.02em; }
+    .ws-explorer-sub { font-size: 11px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
+    .ws-sub-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+    .ws-back-btn {
+      display: flex; align-items: center; gap: 5px;
+      padding: 7px 13px; background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 10px; font-size: 11px; font-weight: 600; color: var(--text2);
+      cursor: pointer; white-space: nowrap; transition: all .15s; flex-shrink: 0;
+    }
+    .ws-back-btn:hover { background: var(--card); color: var(--text); border-color: var(--violet); }
+
+    .ws-explorer-body { display: flex; gap: 12px; }
+    .ws-file-tree { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .ws-tree-section {
+      background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .ws-tree-header {
+      display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text3);
+    }
+    .ws-folder-row {
+      display: flex; align-items: center; gap: 9px;
+      padding: 8px 14px; font-size: 12px; cursor: default;
+      border-bottom: 1px solid var(--border); transition: background .12s;
+    }
+    .ws-folder-row:last-child { border-bottom: none; }
+    .ws-folder-row:hover { background: rgba(255,255,255,.025); }
+    .ws-item-icon { font-size: 14px; flex-shrink: 0; }
+    .ws-item-name { flex: 1; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ws-item-meta { font-size: 10px; color: var(--text3); flex-shrink: 0; }
+    .ws-item-tag { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 100px; flex-shrink: 0; }
+    .ws-item-tag.new { background: rgba(124,92,252,.15); color: var(--violet2); }
+
+    .ws-status-card {
+      width: 162px; flex-shrink: 0;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden; height: fit-content;
+    }
+    .ws-status-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 12px; border-bottom: 1px solid var(--border);
+      background: rgba(124,92,252,.05);
+    }
+    .ws-status-logo {
+      width: 20px; height: 20px; border-radius: 5px;
+      background: linear-gradient(135deg, var(--violet), var(--blue));
+      display: flex; align-items: center; justify-content: center; font-size: 10px;
+    }
+    .ws-status-label { font-size: 10px; font-weight: 800; color: var(--text2); letter-spacing: .04em; }
+    .ws-status-items { padding: 10px 12px; display: flex; flex-direction: column; gap: 7px; }
+    .ws-status-item { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; color: var(--text2); line-height: 1.4; }
+    .ws-status-check { color: var(--green); font-weight: 800; flex-shrink: 0; margin-top: 1px; }
+    .ws-path-badge {
+      margin: 0 12px 12px;
+      padding: 8px 10px; background: var(--card2); border: 1px solid var(--border);
+      border-radius: 8px; font-size: 10px; font-family: "SF Mono","Fira Code",monospace;
+      color: var(--text3); line-height: 1.5; word-break: break-all;
+    }
+
+    /* Laptop done overlay */
+    .laptop-done-overlay {
+      display: none; position: absolute; inset: 0;
+      background: rgba(9,9,15,.88); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      align-items: center; justify-content: center; flex-direction: column;
+      gap: 16px; text-align: center; z-index: 20;
+    }
+    .laptop-done-overlay.show { display: flex; animation: fade-in .4s ease; }
+    .done-check {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: rgba(52,211,153,.12); border: 2px solid var(--green);
+      display: flex; align-items: center; justify-content: center; font-size: 26px;
+    }
+    .done-overlay-title { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; }
+    .done-overlay-sub { font-size: 12px; color: var(--text2); max-width: 260px; }
+    .overlay-view-btn {
+      padding: 10px 22px; background: linear-gradient(135deg, var(--violet), var(--blue));
+      border: none; border-radius: 12px; color: #fff; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .overlay-view-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,92,252,.35); }
+
+    /* ─── ANIMATIONS ───────────────────────────────────────────────────── */
+    @keyframes fade-in       { from{opacity:0} to{opacity:1} }
+    @keyframes fade-slide     { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .fade-slide-in { animation: fade-slide .4s ease both; }
+
+    /* ─── RESPONSIVE ───────────────────────────────────────────────────── */
+    @media (max-width: 1140px) {
+      .laptop-body { width: 580px; }
+      .laptop-base { width: 640px; }
+    }
+    @media (max-width: 940px) {
+      .devices-row { flex-direction: column; align-items: center; }
+      .connection-arrow { flex-direction: row; padding-top: 0; }
+      .arrow-line { width: 50px; height: 2px; background: linear-gradient(to right, transparent, var(--violet), transparent); }
+      .arrow-dots { flex-direction: row; }
+      .laptop-body { width: 100%; max-width: 580px; }
+      .laptop-base { width: 100%; max-width: 640px; }
+    }
+    @media (max-width: 420px) {
+      :root { --phone-w: calc(100vw - 28px); }
+      .phone-shell { border-radius: 40px; }
+      .stage { padding: 72px 14px 50px; }
+    }
+    @media (max-width: 360px) {
+      .examples-grid { grid-template-columns: 1fr; }
+    }
+    /* ── V1.0 Relay screens ──────────────────────────────── */
+    .screen-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px 10px; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--surface); z-index: 2;
+    }
+    .screen-title {
+      font-size: 15px; font-weight: 700; letter-spacing: -0.01em; flex: 1;
+    }
+    .back-btn {
+      background: none; border: none; color: var(--violet); font-size: 13px;
+      font-weight: 600; cursor: pointer; padding: 4px 0; flex-shrink: 0;
+    }
+    .back-btn:hover { opacity: 0.7; }
+    .remote-mac-chip {
+      /* Visibility is controlled by JS relay state — do NOT force display here */
+      align-items: center; gap: 8px;
+      border: 1px solid rgba(124,92,252,0.25);
+      background: rgba(124,92,252,0.07);
+      border-radius: 20px; padding: 6px 12px;
+      font-size: 12px; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .remote-mac-chip:hover { background: rgba(124,92,252,0.14); }
+    /* Pair button on home screen */
+    .pair-mac-btn {
+      margin-top: 8px; width: 100%; padding: 11px;
+      border-radius: 12px; border: 1px solid rgba(124,92,252,0.35);
+      background: rgba(124,92,252,0.08); color: var(--violet);
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .pair-mac-btn:hover { background: rgba(124,92,252,0.16); }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+</head>
+<body>
+
+<div class="version-badge" id="versionBadge"><span class="badge-dot" id="versionDot"></span><span id="versionText">LOCAL AI · PROTOTYPE V1.0</span></div>
+
+<div class="stage">
+
+  <div class="headline">
+    <div class="headline-logo">KRIYA</div>
+    <div class="headline-tagline">From Intent to Action</div>
+  </div>
+
+  <div class="devices-row">
+
+    <!-- ══════════════ PHONE ══════════════ -->
+    <div class="phone-shell" id="phoneShell">
+      <div class="phone-notch"></div>
+      <div class="phone-status-bar">
+        <span>9:41</span>
+        <div class="status-icons"><span>WiFi</span><span>●</span><span>87%</span></div>
+      </div>
+
+      <!-- ═══ SCREEN: HOME ═══ -->
+      <div class="phone-screen active" id="screen-home">
+        <div class="phone-content">
+          <div class="home-header">
+            <div class="home-logo">KRIYA</div>
+            <div class="home-avatar">K</div>
+          </div>
+
+          <!-- Server setup (file:// mode only) -->
+          <div class="server-setup" id="serverSetup">
+            <div class="server-setup-label">⚡ Connect to KRIYA Server</div>
+            <div class="server-setup-row">
+              <input class="server-url-input" id="serverUrlInput" type="text" value="ws://localhost:3000" placeholder="ws://MAC_IP:3000" />
+              <button class="server-connect-btn" id="serverConnectBtn">Connect</button>
+            </div>
+          </div>
+
+          <div class="conn-chip disconnected" id="connChip">
+            <span class="conn-dot"></span>
+            <span id="connChipText">Connecting…</span>
+          </div>
+
+          <!-- V1.0: Remote Mac connection chip -->
+          <div class="conn-chip remote-mac-chip" id="remoteMacChip" style="margin-top:6px;display:none;cursor:pointer;" onclick="showScreen('screen-device')">
+            <span class="conn-dot" id="remoteMacDot" style="background:#7c5cfc;"></span>
+            <span id="remoteMacText">No Mac Paired</span>
+            <span style="margin-left:auto;font-size:0.7rem;opacity:0.6;">Device ›</span>
+          </div>
+
+          <!-- V0.8: AI mode indicator -->
+          <div class="conn-chip" id="aiModeChip" style="margin-top:6px;opacity:0.7;font-size:0.75rem;">
+            <span class="conn-dot" id="aiModeDot" style="background:#7c5cfc;"></span>
+            <span id="aiModeText">LOCAL AI · READY</span>
+          </div>
+
+          <div class="hero-label">What do you want me to do?</div>
+          <textarea class="hero-textarea" id="promptInput" placeholder="e.g. Prepare my Hackathon project"></textarea>
+          <div class="input-actions">
+            <div class="icon-btn" id="voiceBtn" title="Voice input">🎙️</div>
+            <div class="icon-btn" id="cameraBtn" title="Camera / OCR">📷</div>
+            <button class="send-btn" id="startBtn">
+              <span>Start</span><span>→</span>
+            </button>
+          </div>
+
+          <div class="section-label">Try an example</div>
+          <div class="examples-grid">
+            <div class="example-chip" data-prompt="Prepare my Hackathon project."><span class="chip-icon">🏆</span>Hackathon workspace</div>
+            <div class="example-chip" data-prompt="Set up my college project."><span class="chip-icon">🎓</span>College project</div>
+            <div class="example-chip" data-prompt="Prepare a presentation workspace."><span class="chip-icon">📊</span>Presentation</div>
+            <div class="example-chip" data-prompt="Create a research workspace."><span class="chip-icon">🔬</span>Research workspace</div>
+          </div>
+
+          <div class="section-label">Recent</div>
+          <div class="recent-list" id="recentList">
+            <!-- populated from localStorage -->
+          </div>
+
+          <!-- V1.0: Remote access section -->
+          <div class="section-label" style="margin-top:12px;">Remote Access</div>
+          <button class="pair-mac-btn" onclick="showScreen('screen-pair')">
+            📱 Pair with Mac over Internet
+          </button>
+        </div>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" />
+      </div>
+
+      <!-- ═══ SCREEN: CAMERA PREVIEW ═══ -->
+      <div class="phone-screen" id="screen-camera">
+        <div class="camera-screen">
+          <h2>📷 Captured</h2>
+          <img id="cameraPreviewImg" class="camera-preview-img" />
+          <div class="camera-status" id="cameraStatus">Analyzing image text...</div>
+          <div class="camera-spinner-row" id="cameraSpinner">
+            <div class="proc-spinner"></div> Running OCR…
+          </div>
+          <textarea id="cameraPromptInput" class="camera-prompt-input" placeholder="e.g. Create a workspace for this project"></textarea>
+          <div class="camera-buttons">
+            <button id="btnCameraRetake" class="camera-retake-btn">Retake</button>
+            <button id="btnCameraUse" class="camera-use-btn">Confirm &amp; Start →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: UNDERSTANDING ═══ -->
+      <div class="phone-screen" id="screen-understanding">
+        <div class="understanding-screen">
+          <div class="understanding-orb">⚡</div>
+          <div>
+            <div class="understanding-title">Understanding…</div>
+          </div>
+          <div class="understanding-sub" id="understandingSub">Analysing your request</div>
+          <div class="proc-steps">
+            <div class="proc-step" id="pstep-0"><span class="proc-step-icon">🔍</span><span>Understanding intent</span></div>
+            <div class="proc-step" id="pstep-1"><span class="proc-step-icon">🗺️</span><span>Planning workflow</span></div>
+            <div class="proc-step" id="pstep-2"><span class="proc-step-icon">✅</span><span>Validating steps</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: PLAN (workflow preview) ═══ -->
+      <div class="phone-screen" id="screen-plan">
+        <div class="plan-screen-wrap">
+          <div class="plan-top-bar">
+            <div class="plan-kriya-badge">KRIYA</div>
+            <div id="plannerModeBadge" class="plan-kriya-badge" style="background:rgba(124,92,252,0.18);color:#7c5cfc;font-size:0.7rem;">⚡ LOCAL AI</div>
+            <div class="plan-safe-badge">🔒 Safe actions only</div>
+          </div>
+          <div class="plan-headline" id="planHeadline">Workflow Ready</div>
+          <div class="plan-caption" id="planCaption">I'll take care of the following:</div>
+          <div class="plan-card">
+            <div class="plan-card-header">Workflow Steps</div>
+            <div class="plan-card-steps" id="planSteps">
+              <!-- populated dynamically -->
+            </div>
+          </div>
+          <div class="plan-meta-row">
+            <div class="plan-meta-count"><strong id="planStepCount">0</strong> actions</div>
+            <div style="font-size:11px;color:var(--text3);">Safe actions only</div>
+          </div>
+          <div class="plan-actions">
+            <button class="plan-cancel-btn" id="planCancelBtn">Cancel</button>
+            <button class="plan-approve-btn" id="planApproveBtn">Approve Workflow ✓</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: EXECUTING (multi-step) ═══ -->
+      <div class="phone-screen" id="screen-executing">
+        <div class="executing-screen">
+          <div class="executing-header">
+            <div class="executing-label">Executing</div>
+            <div class="executing-title" id="executingTitle">Workflow</div>
+            <div class="executing-progress-row">
+              <span id="execProgressText" style="font-size:11px;color:var(--text3);">0 / 0</span>
+              <div class="exec-progress-bar-wrap">
+                <div class="exec-progress-bar" id="execProgressBar"></div>
+              </div>
+              <span id="execProgressPct" style="font-size:11px;color:var(--text3);">0%</span>
+            </div>
+          </div>
+          <div class="executing-steps-wrap" id="execStepsList">
+            <!-- populated dynamically -->
+          </div>
+          <div class="executing-footer">
+            <button class="cancel-workflow-btn" id="cancelWorkflowBtn">Cancel Workflow</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: PAUSED (failure) ═══ -->
+      <div class="phone-screen" id="screen-paused">
+        <div class="paused-screen">
+          <div class="paused-icon">⚠️</div>
+          <div class="paused-title">Workflow Paused</div>
+          <div class="paused-msg" id="pausedMsg">A step failed during execution.</div>
+          <div class="paused-step-info" id="pausedStepInfo">Step failed</div>
+          <div class="paused-actions">
+            <button class="retry-btn" id="retryStepBtn">Retry Step</button>
+            <button class="cancel-paused-btn" id="cancelPausedBtn">Cancel Workflow</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: COMPLETE ═══ -->
+      <div class="phone-screen" id="screen-complete">
+        <div class="complete-screen" id="completeScreenContent">
+          <!-- populated dynamically -->
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: APPROVAL (single-action) ═══ -->
+      <div class="phone-screen" id="screen-approval">
+        <div class="approval-screen">
+          <div class="approval-intro">
+            <div class="approval-eyebrow">KRIYA wants to</div>
+            <div class="approval-headline">Review &amp; Approve</div>
+          </div>
+          <div class="approval-card">
+            <div class="approval-card-header">
+              <span class="approval-card-icon">📋</span>
+              <span class="approval-card-title">Pending Action</span>
+            </div>
+            <div class="approval-body">
+              <div class="approval-type-label" id="approvalTypeLabel">Create Folder</div>
+              <div class="approval-name" id="approvalName">Hackathon</div>
+              <div class="approval-detail">
+                Location: <span class="detail-chip" id="approvalLocation">Desktop</span>
+              </div>
+              <div class="approval-divider"></div>
+              <div class="approval-security">
+                <span>🔒</span>
+                <span>This action runs on your Mac via the KRIYA agent. Only allowlisted operations are permitted.</span>
+              </div>
+            </div>
+            <div class="approval-btns">
+              <button class="approval-cancel-btn" id="approvalCancelBtn">Cancel</button>
+              <button class="approval-approve-btn" id="approvalApproveBtn">Approve ✓</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: SINGLE WORKING ═══ -->
+      <div class="phone-screen" id="screen-single-working">
+        <div class="single-working-screen">
+          <div class="single-spinner"></div>
+          <div class="single-working-title" id="singleWorkingTitle">Mac is executing…</div>
+          <div class="single-working-sub" id="singleWorkingSub">Your Mac is running the action</div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: SINGLE DONE ═══ -->
+      <div class="phone-screen" id="screen-single-done">
+        <div class="single-done-screen" id="singleDoneContent">
+          <!-- populated dynamically -->
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: PAIR (remote pairing) ═══ -->
+      <div class="phone-screen" id="screen-pair">
+        <div class="phone-content">
+          <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+            <div class="screen-title">Pair with Mac</div>
+          </div>
+          <div style="padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+            <div style="font-size:40px;margin-top:8px;">📱</div>
+            <div style="font-size:15px;font-weight:700;letter-spacing:-0.01em;text-align:center;">Connect a Device</div>
+            <div style="font-size:12px;color:var(--text2);text-align:center;line-height:1.6;">
+              Open KRIYA Mac Agent, generate a pairing QR,<br>then enter the code or scan the link below.
+            </div>
+
+            <div style="width:100%;background:var(--surface2);border-radius:14px;padding:14px;">
+              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Relay Server</div>
+              <input id="relayUrlInput" type="text" placeholder="ws://localhost:3100"
+                style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--text1);box-sizing:border-box;" />
+            </div>
+
+            <div style="width:100%;background:var(--surface2);border-radius:14px;padding:14px;">
+              <div style="font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Pairing Token</div>
+              <input id="pairingTokenInput" type="text" placeholder="Paste token from Mac QR..."
+                style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--text1);box-sizing:border-box;" />
+            </div>
+
+            <button onclick="startRelayPairing()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c5cfc,#a78bfa);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">
+              Connect to Mac →
+            </button>
+            <div id="pairStatus" style="font-size:11px;color:var(--text2);text-align:center;min-height:20px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SCREEN: DEVICE (paired device info) ═══ -->
+      <div class="phone-screen" id="screen-device">
+        <div class="phone-content">
+          <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+            <div class="screen-title">Device</div>
+          </div>
+          <div style="padding:20px 16px;display:flex;flex-direction:column;gap:16px;">
+            <!-- Device card -->
+            <div style="background:var(--surface2);border-radius:16px;padding:18px;display:flex;align-items:center;gap:12px;">
+              <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,rgba(124,92,252,0.2),rgba(167,139,250,0.1));border:1px solid rgba(124,92,252,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;">💻</div>
+              <div style="flex:1;">
+                <div id="deviceCardName" style="font-size:15px;font-weight:700;">My Mac</div>
+                <div id="deviceCardStatus" style="font-size:11px;color:var(--text2);margin-top:2px;">● Connected</div>
+              </div>
+              <div id="deviceCardDot" style="width:10px;height:10px;border-radius:50%;background:#34d399;box-shadow:0 0 8px rgba(52,211,153,0.6);"></div>
+            </div>
+
+            <!-- Connection details -->
+            <div style="background:var(--surface2);border-radius:14px;overflow:hidden;">
+              <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:11px;color:var(--text2);">Connection</span>
+                <span id="deviceConnType" style="font-size:11px;color:#7c5cfc;font-weight:600;">Relay</span>
+              </div>
+              <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:11px;color:var(--text2);">Security</span>
+                <span style="font-size:11px;color:#34d399;font-weight:600;">🔒 Encrypted Session</span>
+              </div>
+              <div style="padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:11px;color:var(--text2);">Paired</span>
+                <span id="devicePairedAt" style="font-size:11px;color:var(--text1);">—</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <button onclick="startRelayMode()" style="width:100%;padding:12px;border-radius:12px;border:none;background:linear-gradient(135deg,#7c5cfc,#a78bfa);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">
+              ⚡ Start Command
+            </button>
+            <button onclick="disconnectRelay()" style="width:100%;padding:12px;border-radius:12px;border:1px solid rgba(248,113,113,0.4);background:rgba(248,113,113,0.06);color:#f87171;font-size:13px;font-weight:600;cursor:pointer;">
+              Disconnect Device
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end phone-shell -->
+
+    <!-- ARROW -->
+    <div class="connection-arrow" id="connArrow">
+      <div class="arrow-dots"><span></span><span></span><span></span></div>
+      <div class="arrow-line"></div>
+      <div class="arrow-label">Handoff</div>
+    </div>
+
+    <!-- ══════════════ LAPTOP ══════════════ -->
+    <div class="laptop-wrap">
+      <div class="laptop-body">
+        <div class="laptop-camera"><div class="cam-dot"></div></div>
+        <div class="laptop-screen" id="laptopScreen">
+          <div class="laptop-progress-bar" id="laptopProgressBar"></div>
+          <div class="laptop-topbar">
+            <div class="traffic-lights"><div class="tl red"></div><div class="tl yellow"></div><div class="tl green"></div></div>
+            <div class="url-bar">⚡ KRIYA — AI Workflow Agent</div>
+          </div>
+          <div class="laptop-content" id="laptopContent">
+            <div class="laptop-idle" id="laptopIdle">
+              <div class="idle-icon">💻</div>
+              <p>Waiting for a workflow<br/>from your phone</p>
+            </div>
+            <div class="laptop-conn-banner" id="connBanner">
+              <div class="conn-banner-left">
+                <div class="conn-banner-icon">⚡</div>
+                <div>
+                  <div class="conn-banner-title">KRIYA Connected</div>
+                  <div class="conn-banner-sub">Phone · Ready to execute</div>
+                </div>
+              </div>
+              <div class="conn-banner-live"><span>●</span> Live</div>
+            </div>
+            <div class="workspace-panel" id="workspacePanel">
+              <div class="ws-header">
+                <div class="ws-title" id="wsPanelTitle">Workflow</div>
+                <div class="ws-badge" id="wsBadgeText">Preparing…</div>
+              </div>
+              <div class="terminal-window">
+                <div class="terminal-header">
+                  <div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div>
+                  <span class="terminal-label">kriya-agent — zsh</span>
+                </div>
+                <div class="terminal-body" id="terminalBody">
+                  <div class="terminal-cursor" id="termCursor"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Workspace Explorer -->
+            <div class="ws-explorer" id="wsExplorer">
+              <div class="ws-explorer-header">
+                <div class="ws-explorer-titles">
+                  <div class="ws-explorer-title" id="wsExplorerTitle">Workspace</div>
+                  <div class="ws-explorer-sub">
+                    <span class="ws-sub-dot"></span>
+                    <span id="wsExplorerSub">Ready on Mac</span>
+                  </div>
+                </div>
+                <button class="ws-back-btn" id="wsBackBtn">← Back</button>
+              </div>
+              <div class="ws-explorer-body">
+                <div class="ws-file-tree">
+                  <div class="ws-tree-section">
+                    <div class="ws-tree-header"><span>📂</span>Folders</div>
+                    <div id="wsExplorerFolders"><!-- dynamically populated --></div>
+                  </div>
+                </div>
+                <div class="ws-status-card">
+                  <div class="ws-status-head">
+                    <div class="ws-status-logo">⚡</div>
+                    <div class="ws-status-label">KRIYA</div>
+                  </div>
+                  <div class="ws-status-items" id="wsStatusItems"><!-- dynamically populated --></div>
+                  <div class="ws-path-badge" id="wsPathBadge">~/Desktop/</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="laptop-done-overlay" id="laptopDoneOverlay">
+            <div class="done-check">✅</div>
+            <div class="done-overlay-title" id="doneOverlayTitle">Workflow Complete</div>
+            <div class="done-overlay-sub" id="doneOverlaySub">All steps completed successfully.</div>
+            <button class="overlay-view-btn" id="overlayViewBtn">View Workspace</button>
+          </div>
+        </div>
+      </div>
+      <div class="laptop-base"></div>
+      <div class="laptop-foot"></div>
+    </div>
+
+  </div><!-- end devices-row -->
+</div><!-- end stage -->
+
+<script>
+'use strict';
+/* ════════════════════════════════════════════════════════════════════════
+   KRIYA V0.7 — Frontend
+   Premium dark UI · Real multi-step workflow · Live execution timeline
+════════════════════════════════════════════════════════════════════════ */
+
+const $ = id => document.getElementById(id);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// ─── Screen router ─────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.phone-screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+
+// ─── Recent workflows (localStorage) ──────────────────────────────────────
+function loadRecent() {
+  try { return JSON.parse(localStorage.getItem('kriya_recent') || '[]'); } catch { return []; }
+}
+function saveRecent(items) {
+  try { localStorage.setItem('kriya_recent', JSON.stringify(items.slice(0, 5))); } catch {}
+}
+function addRecentWorkflow(name) {
+  const items = loadRecent();
+  // remove duplicates
+  const filtered = items.filter(i => i.name !== name);
+  filtered.unshift({ name, ts: Date.now() });
+  saveRecent(filtered);
+  renderRecent();
+}
+function renderRecent() {
+  const items = loadRecent();
+  const list = $('recentList');
+  if (!list) return;
+  if (items.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = items.map(item => {
+    const ago = formatAgo(item.ts);
+    return `<div class="recent-item" data-prompt="${escHtml(item.name)}">
+      <div class="recent-icon">📁</div>
+      <div class="recent-meta">
+        <div class="recent-name">${escHtml(item.name)}</div>
+        <div class="recent-time">${ago}</div>
+      </div>
+      <div class="recent-badge">✓ Done</div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.recent-item').forEach(el => {
+    el.addEventListener('click', () => {
+      $('promptInput').value = el.dataset.prompt;
+      $('promptInput').focus();
+    });
+  });
+}
+function formatAgo(ts) {
+  const d = Date.now() - ts;
+  if (d < 60000)    return 'Just now';
+  if (d < 3600000)  return Math.floor(d/60000) + 'm ago';
+  if (d < 86400000) return 'Today';
+  return Math.floor(d/86400000) + 'd ago';
+}
+
+// ─── Example chips ──────────────────────────────────────────────────────────
+document.querySelectorAll('.example-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    $('promptInput').value = chip.dataset.prompt;
+    $('promptInput').focus();
+  });
+});
+
+// ─── Start button ───────────────────────────────────────────────────────────
+$('startBtn').addEventListener('click', () => {
+  const prompt = $('promptInput').value.trim();
+  if (!prompt) { $('promptInput').focus(); return; }
+  if (wsReady()) {
+    showScreen('screen-understanding');
+    animateUnderstanding().then(() => {
+      ws.send(JSON.stringify({ type: 'WORKFLOW_REQUEST', text: prompt }));
+    });
+  } else {
+    // Demo mode — show understanding then clarification
+    animateUnderstanding().then(() => showParseError('Mac agent not connected. Run: npm run agent'));
+  }
+});
+
+// ─── Understanding animation ────────────────────────────────────────────────
+async function animateUnderstanding() {
+  $('understandingSub').textContent = 'Analysing your request';
+  const steps = [
+    { id: 'pstep-0', text: 'Understanding intent…' },
+    { id: 'pstep-1', text: 'Planning workflow…' },
+    { id: 'pstep-2', text: 'Validating steps…' },
+  ];
+  for (const s of steps) {
+    const el = $(s.id);
+    const spinner = document.createElement('div');
+    spinner.className = 'proc-spinner';
+    el.prepend(spinner);
+    el.classList.add('active');
+    $('understandingSub').textContent = s.text;
+    await sleep(600);
+    el.classList.remove('active');
+    el.classList.add('done');
+    spinner.remove();
+    const check = document.createElement('span');
+    check.textContent = '✓';
+    check.style.cssText = 'color:var(--green);font-weight:800;font-size:13px;flex-shrink:0;';
+    el.prepend(check);
+  }
+  await sleep(300);
+}
+
+// Reset understanding screen for next use
+function resetUnderstanding() {
+  ['pstep-0','pstep-1','pstep-2'].forEach(id => {
+    const el = $(id);
+    el.classList.remove('active','done');
+    // Remove injected check/spinners (first child if not the icon)
+    while (el.children.length > 1) el.removeChild(el.firstChild);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   MULTI-STEP WORKFLOW STATE
+════════════════════════════════════════════════════════════════════════ */
+let currentWorkflowId  = null;
+let currentWorkflowSteps = [];  // [{id, type, name, location}]
+let currentWorkflowName  = '';
+let executionStepStatus  = [];  // 'pending' | 'running' | 'done' | 'failed'
+let pendingRequestId     = null;
+let pendingActionType    = null;
+let macConnected         = false;
+
+function wsReady() {
+  return ws !== null && ws.readyState === WebSocket.OPEN && macConnected;
+}
+
+// ─── Plan screen ────────────────────────────────────────────────────────────
+function showPlanScreen(workflowId, name, goal, steps, plannerMode) {
+  currentWorkflowId = workflowId;
+  currentWorkflowSteps = steps;
+  currentWorkflowName  = name;
+
+  $('planHeadline').textContent = name;
+  $('planCaption').textContent  = `"${goal}"`;
+  $('planStepCount').textContent = steps.length;
+
+  // V0.8: update planner mode badge on plan card
+  const modeBadge = $('plannerModeBadge');
+  if (modeBadge) {
+    const isAI = plannerMode === 'AI' || plannerMode === 'MOCK';
+    modeBadge.textContent = isAI ? '⚡ LOCAL AI' : '⚠ FALLBACK';
+    modeBadge.style.color = isAI ? '#7c5cfc' : '#f59e0b';
+    modeBadge.style.background = isAI ? 'rgba(124,92,252,0.18)' : 'rgba(245,158,11,0.18)';
+  }
+
+  const container = $('planSteps');
+  container.innerHTML = steps.map((s, i) => `
+    <div class="plan-step-row">
+      <div class="plan-step-num">${i + 1}</div>
+      <div class="plan-step-info">
+        <div class="plan-step-name">${escHtml(s.name)}</div>
+        <div class="plan-step-detail">${s.location === 'WORKSPACE' ? 'Inside workspace' : 'Desktop'}</div>
+      </div>
+      <span class="plan-step-icon">📁</span>
+    </div>
+  `).join('');
+
+  showScreen('screen-plan');
+}
+
+// V0.8: Update the AI mode chip on the home screen
+function updateAIModeBadge(plannerMode) {
+  const chip = $('aiModeChip');
+  const dot  = $('aiModeDot');
+  const text = $('aiModeText');
+  const vText = $('versionText');
+  if (!chip) return;
+  const isAI = plannerMode === 'AI' || plannerMode === 'MOCK';
+  if (dot)  dot.style.background = isAI ? '#7c5cfc' : '#f59e0b';
+  if (text) text.textContent = isAI ? 'LOCAL AI · READY' : 'FALLBACK MODE';
+  if (vText) vText.textContent = isAI ? 'LOCAL AI · PROTOTYPE V1.0' : 'FALLBACK MODE · PROTOTYPE V1.0';
+}
+
+$('planCancelBtn').addEventListener('click', () => {
+  if (currentWorkflowId && wsReady()) {
+    ws.send(JSON.stringify({ type: 'CANCEL_WORKFLOW', workflowId: currentWorkflowId }));
+  }
+  currentWorkflowId = null;
+  showScreen('screen-home');
+  resetUnderstanding();
+});
+
+$('planApproveBtn').addEventListener('click', () => {
+  if (!currentWorkflowId || !wsReady()) return;
+  ws.send(JSON.stringify({ type: 'APPROVE_WORKFLOW', workflowId: currentWorkflowId }));
+  // Transition to executing screen immediately — server will send WORKFLOW_EXECUTING
+});
+
+// ─── Executing screen ───────────────────────────────────────────────────────
+function showExecutingScreen(name, steps) {
+  currentWorkflowName  = name;
+  currentWorkflowSteps = steps;
+  executionStepStatus  = steps.map(() => 'pending');
+
+  $('executingTitle').textContent = name;
+  updateExecProgress(0, steps.length);
+  renderExecSteps();
+  showScreen('screen-executing');
+  $('connArrow').classList.add('active');
+}
+
+function renderExecSteps() {
+  const container = $('execStepsList');
+  container.innerHTML = currentWorkflowSteps.map((s, i) => {
+    const status = executionStepStatus[i] || 'pending';
+    const statusIcon = { done: '✓', running: '', failed: '✕', pending: '○' }[status];
+    return `
+      <div class="exec-step ${status}" id="exec-step-${i}">
+        <span class="exec-step-idx">${String(i+1).padStart(2,'0')}</span>
+        ${status === 'running'
+          ? '<div class="exec-step-spinner"></div>'
+          : `<span class="exec-step-status">${statusIcon}</span>`}
+        <span class="exec-step-name">${escHtml(s.name)}</span>
+      </div>`;
+  }).join('');
+}
+
+function updateExecStep(index, status) {
+  if (index < 0 || index >= executionStepStatus.length) return;
+  executionStepStatus[index] = status;
+  const el = $(`exec-step-${index}`);
+  if (!el) return;
+
+  // Replace element
+  const step = currentWorkflowSteps[index];
+  const statusIcon = { done: '✓', running: '', failed: '✕', pending: '○' }[status];
+  el.className = `exec-step ${status}`;
+  el.innerHTML = `
+    <span class="exec-step-idx">${String(index+1).padStart(2,'0')}</span>
+    ${status === 'running'
+      ? '<div class="exec-step-spinner"></div>'
+      : `<span class="exec-step-status">${statusIcon}</span>`}
+    <span class="exec-step-name">${escHtml(step.name)}</span>`;
+}
+
+function updateExecProgress(done, total) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  $('execProgressBar').style.width = pct + '%';
+  $('execProgressText').textContent = `${done} / ${total}`;
+  $('execProgressPct').textContent  = pct + '%';
+  $('laptopProgressBar').style.width = pct + '%';
+}
+
+$('cancelWorkflowBtn').addEventListener('click', () => {
+  if (!currentWorkflowId || !wsReady()) return;
+  ws.send(JSON.stringify({ type: 'CANCEL_WORKFLOW', workflowId: currentWorkflowId }));
+});
+
+// ─── Paused screen ──────────────────────────────────────────────────────────
+function showPausedScreen(failedStepIndex, failedStepName, message) {
+  $('pausedMsg').textContent = message || 'A step failed during execution.';
+  $('pausedStepInfo').textContent = `Step ${failedStepIndex + 1} failed: ${failedStepName}`;
+  showScreen('screen-paused');
+}
+
+$('retryStepBtn').addEventListener('click', () => {
+  if (!currentWorkflowId || !wsReady()) return;
+  ws.send(JSON.stringify({ type: 'RETRY_STEP', workflowId: currentWorkflowId }));
+  // Re-mark the current step as running
+  const failedIdx = executionStepStatus.lastIndexOf('failed');
+  if (failedIdx >= 0) updateExecStep(failedIdx, 'running');
+  showScreen('screen-executing');
+});
+
+$('cancelPausedBtn').addEventListener('click', () => {
+  if (currentWorkflowId && wsReady()) {
+    ws.send(JSON.stringify({ type: 'CANCEL_WORKFLOW', workflowId: currentWorkflowId }));
+  }
+  currentWorkflowId = null;
+  showScreen('screen-home');
+  resetUnderstanding();
+});
+
+// ─── Complete screen ────────────────────────────────────────────────────────
+function showCompleteScreen(name, completedSteps) {
+  const container = $('completeScreenContent');
+  const stepRows = (completedSteps || []).map(s =>
+    `<div class="complete-step-row">✓ ${escHtml(s.name || s)}</div>`
+  ).join('');
+
+  container.innerHTML = `
+    <div class="complete-orb">✅</div>
+    <div class="complete-title">Workflow Complete</div>
+    <div class="complete-sub">${escHtml(name)} is ready on your Mac.</div>
+    <div class="complete-steps-done">
+      <div class="complete-steps-header">${completedSteps ? completedSteps.length : 0} Actions Completed</div>
+      ${stepRows}
+    </div>
+    <div class="complete-actions">
+      <button class="done-btn-primary" onclick="showWorkspaceExplorer()">View Workspace</button>
+      <button class="done-btn-secondary" onclick="restartApp()">Start Another Workflow</button>
+    </div>`;
+
+  showScreen('screen-complete');
+
+  // Show laptop done overlay
+  $('doneOverlayTitle').textContent = `${name} Ready`;
+  $('doneOverlaySub').textContent = `${completedSteps ? completedSteps.length : 0} steps completed.`;
+  setTimeout(() => $('laptopDoneOverlay').classList.add('show'), 800);
+
+  // Save to recent
+  addRecentWorkflow(name);
+}
+
+// ─── Workspace Explorer ─────────────────────────────────────────────────────
+let lastWorkspaceData = null;
+
+function showWorkspaceExplorer(data) {
+  if (data) lastWorkspaceData = data;
+  const d = lastWorkspaceData || {};
+  const name    = d.name    || currentWorkflowName || 'Workspace';
+  const folders = d.folders || (currentWorkflowSteps.filter(s => s.location !== 'DESKTOP').map(s => s.name));
+  const wspath  = d.path    || `~/Desktop/${name.replace(/\s+/g,'_')}/`;
+
+  $('wsExplorerTitle').textContent = name;
+  $('wsExplorerSub').textContent   = 'Ready on Mac · ' + new Date().toLocaleTimeString();
+  $('wsPathBadge').textContent     = wspath;
+
+  // Render folders
+  $('wsExplorerFolders').innerHTML = folders.map(f =>
+    `<div class="ws-folder-row">
+      <span class="ws-item-icon">📁</span>
+      <span class="ws-item-name">${escHtml(f)}</span>
+      <span class="ws-item-tag new">New</span>
+    </div>`
+  ).join('') || '<div style="padding:12px 14px;font-size:12px;color:var(--text3);">No sub-folders</div>';
+
+  // Status items
+  $('wsStatusItems').innerHTML = [
+    'Workspace created',
+    ...folders.map(f => `${f} created`),
+  ].map(item =>
+    `<div class="ws-status-item"><span class="ws-status-check">✓</span>${escHtml(item)}</div>`
+  ).join('');
+
+  $('laptopDoneOverlay').classList.remove('show');
+  $('connBanner').style.display = 'none';
+  $('workspacePanel').style.display = 'none';
+  $('wsExplorer').classList.add('visible');
+  $('laptopContent').scrollTop = 0;
+}
+
+function hideWorkspaceExplorer() {
+  $('wsExplorer').classList.remove('visible');
+  $('connBanner').style.display = '';
+  $('workspacePanel').style.display = '';
+  $('laptopContent').scrollTop = 0;
+}
+
+$('wsBackBtn').addEventListener('click', hideWorkspaceExplorer);
+$('overlayViewBtn').addEventListener('click', () => showWorkspaceExplorer());
+
+// ─── Terminal helpers ───────────────────────────────────────────────────────
+async function addTerminalLine(text, cls = '') {
+  const body = $('terminalBody');
+  const cursor = $('termCursor');
+  if (cursor.parentNode) cursor.parentNode.removeChild(cursor);
+  await sleep(160);
+  const div = document.createElement('div');
+  div.className = 'terminal-line';
+  div.innerHTML = `<span class="t-prompt">$</span><span class="t-text ${cls}">${escHtml(text)}</span>`;
+  body.appendChild(div);
+  requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('show')));
+  body.appendChild(cursor);
+  body.scrollTop = body.scrollHeight;
+}
+
+function showLaptopWorking(name) {
+  $('laptopIdle').style.display = 'none';
+  $('connBanner').classList.add('visible');
+  $('workspacePanel').classList.add('visible');
+  $('wsPanelTitle').textContent = name;
+  $('wsBadgeText').textContent = 'Executing…';
+}
+
+// ─── Single-action approval (legacy / 1-step) ───────────────────────────────
+function showSingleApproval(action) {
+  const TYPE_LABELS = { CREATE_FOLDER: 'Create Folder', CREATE_WORKSPACE: 'Prepare Workspace' };
+  const LOC_LABELS  = { DESKTOP: 'Desktop' };
+  $('approvalTypeLabel').textContent = TYPE_LABELS[action.type] || action.type;
+  $('approvalName').textContent      = action.name || '—';
+  $('approvalLocation').textContent  = LOC_LABELS[action.location] || action.location;
+  showScreen('screen-approval');
+}
+
+$('approvalApproveBtn').addEventListener('click', () => {
+  if (!pendingRequestId || !wsReady()) return;
+  ws.send(JSON.stringify({ type: 'APPROVE', requestId: pendingRequestId }));
+  $('singleWorkingTitle').textContent = 'Mac is executing…';
+  $('singleWorkingSub').textContent   = 'Sending approval to Mac agent…';
+  showScreen('screen-single-working');
+});
+
+$('approvalCancelBtn').addEventListener('click', () => {
+  if (pendingRequestId && wsReady()) {
+    ws.send(JSON.stringify({ type: 'CANCEL', requestId: pendingRequestId }));
+  }
+  pendingRequestId = null;
+  showScreen('screen-home');
+  resetUnderstanding();
+});
+
+// ─── Error display ──────────────────────────────────────────────────────────
+function showParseError(message) {
+  $('understandingSub').textContent = '✗ ' + message;
+  setTimeout(() => { showScreen('screen-home'); resetUnderstanding(); }, 2500);
+}
+
+// ─── Restart ────────────────────────────────────────────────────────────────
+function restartApp() {
+  currentWorkflowId    = null;
+  currentWorkflowSteps = [];
+  currentWorkflowName  = '';
+  executionStepStatus  = [];
+  pendingRequestId     = null;
+  pendingActionType    = null;
+  $('promptInput').value = '';
+  hideWorkspaceExplorer();
+  $('laptopDoneOverlay').classList.remove('show');
+  $('laptopProgressBar').style.width = '0%';
+  resetUnderstanding();
+  renderRecent();
+  showScreen('screen-home');
+}
+window.restartApp = restartApp;
+
+/* ════════════════════════════════════════════════════════════════════════
+   CONNECTION CHIP
+════════════════════════════════════════════════════════════════════════ */
+function setChipConnecting() {
+  const chip = $('connChip'); chip.className = 'conn-chip connecting';
+  $('connChipText').textContent = 'Connecting…';
+}
+function setChipConnected() {
+  const chip = $('connChip'); chip.className = 'conn-chip connected';
+  $('connChipText').textContent = 'Mac Connected ·  Ready';
+  macConnected = true;
+}
+function setChipDisconnected(reason) {
+  const chip = $('connChip'); chip.className = 'conn-chip disconnected';
+  $('connChipText').textContent = reason || 'Disconnected';
+  macConnected = false;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   WEBSOCKET MESSAGE HANDLER
+════════════════════════════════════════════════════════════════════════ */
+function handleMessage(msg) {
+  switch (msg.type) {
+
+    case 'REGISTERED':
+      if (msg.mac_connected) setChipConnected();
+      else setChipDisconnected('Mac Not Connected');
+      break;
+
+    case 'STATUS_UPDATE':
+      if (msg.mac_connected) setChipConnected();
+      else setChipDisconnected('Mac Disconnected');
+      break;
+
+    // ── Multi-step workflow ──────────────────────────────────────────────
+    case 'WORKFLOW_PLAN':
+      showPlanScreen(msg.workflowId, msg.name, msg.goal, msg.steps, msg.plannerMode);
+      updateAIModeBadge(msg.plannerMode);
+      break;
+
+    case 'WORKFLOW_EXECUTING':
+      showLaptopWorking(msg.name);
+      showExecutingScreen(msg.name, msg.steps);
+      addTerminalLine(`→ KRIYA workflow: ${msg.name}`, 'yellow');
+      break;
+
+    case 'STEP_RUNNING': {
+      const idx = msg.stepIndex;
+      // Mark previous as done (if any)
+      for (let i = 0; i < idx; i++) {
+        if (executionStepStatus[i] !== 'done') updateExecStep(i, 'done');
+      }
+      updateExecStep(idx, 'running');
+      addTerminalLine(`  Step ${idx + 1}: ${msg.name}`);
+      break;
+    }
+
+    case 'STEP_PROGRESS': {
+      const idx = msg.stepIndex;
+      updateExecStep(idx, 'done');
+      updateExecProgress(msg.completedCount, msg.total);
+      addTerminalLine(`  ✓ ${msg.name}`, 'green');
+      $('wsBadgeText').textContent = `${msg.completedCount} / ${msg.total} steps`;
+      break;
+    }
+
+    case 'WORKFLOW_COMPLETE': {
+      // Mark all steps done
+      executionStepStatus = executionStepStatus.map(() => 'done');
+      renderExecSteps();
+      updateExecProgress(msg.completedSteps ? msg.completedSteps.length : currentWorkflowSteps.length, currentWorkflowSteps.length);
+      addTerminalLine('✓ Workflow complete', 'green');
+      $('wsBadgeText').textContent = '✓ Complete';
+
+      const folders = (msg.completedSteps || []).filter(s => {
+        const step = currentWorkflowSteps.find(st => st.id === s.id || st.name === s.name);
+        return step && step.location === 'WORKSPACE';
+      }).map(s => s.name || s);
+
+      lastWorkspaceData = {
+        name: currentWorkflowName,
+        folders,
+        path: `~/Desktop/${currentWorkflowSteps[0]?.name?.replace(/\s+/g,'_') || currentWorkflowName}/`,
+      };
+
+      setTimeout(() => showCompleteScreen(currentWorkflowName, msg.completedSteps), 600);
+      break;
+    }
+
+    case 'WORKFLOW_PAUSED': {
+      // Mark the failed step
+      updateExecStep(msg.failedStepIndex, 'failed');
+      addTerminalLine(`  ✕ ${msg.failedStepName}: ${msg.message}`, '');
+      showPausedScreen(msg.failedStepIndex, msg.failedStepName, msg.message);
+      break;
+    }
+
+    case 'WORKFLOW_CANCELLED': {
+      currentWorkflowId = null;
+      // Show a brief message then go home
+      const completeEl = $('completeScreenContent');
+      completeEl.innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <div style="font-size:40px;margin-bottom:16px;">🚫</div>
+          <div style="font-size:19px;font-weight:800;margin-bottom:8px;">Workflow Cancelled</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.5;">${escHtml(msg.message || 'Workflow cancelled.')}</div>
+          ${msg.completedSteps && msg.completedSteps.length > 0
+            ? `<div style="font-size:12px;color:var(--green);">${msg.completedSteps.length} completed actions were not undone.</div>` : ''}
+          <button class="done-btn-secondary" style="margin-top:20px;" onclick="restartApp()">Back to Home</button>
+        </div>`;
+      showScreen('screen-complete');
+      setTimeout(restartApp, 4000);
+      break;
+    }
+
+    // ── Single-action (backward compat) ──────────────────────────────────
+    case 'ACTION_READY':
+      pendingRequestId = msg.requestId;
+      pendingActionType = msg.action.type;
+      showSingleApproval(msg.action);
+      break;
+
+    case 'CLARIFICATION_REQUIRED':
+    case 'UNSUPPORTED':
+    case 'PARSE_ERROR':
+      showParseError(msg.message || 'Could not understand request.');
+      break;
+
+    case 'EXECUTING':
+      $('singleWorkingTitle').textContent = 'Mac is executing…';
+      $('singleWorkingSub').textContent   = 'Mac agent received the action…';
+      showScreen('screen-single-working');
+      showLaptopWorking(pendingActionType === 'CREATE_WORKSPACE' ? 'Workspace' : 'Folder');
+      addTerminalLine('→ Executing action…', 'yellow');
+      break;
+
+    case 'PROGRESS':
+      $('singleWorkingSub').textContent = msg.label || 'Executing…';
+      addTerminalLine(`  ${msg.label || 'Working…'}`);
+      break;
+
+    case 'RESULT':
+      pendingRequestId = null;
+      if (msg.success) {
+        addTerminalLine('✓ Action complete', 'green');
+        $('wsBadgeText').textContent = '✓ Complete';
+        const successFolders = msg.createdFolders || [];
+        const content = $('singleDoneContent');
+        content.innerHTML = `
+          <div style="width:72px;height:72px;border-radius:50%;background:rgba(52,211,153,.12);border:2px solid rgba(52,211,153,.4);display:flex;align-items:center;justify-content:center;font-size:30px;">✅</div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.02em;text-align:center;">Done</div>
+          <div style="font-size:13px;color:var(--text2);text-align:center;max-width:260px;line-height:1.5;">${escHtml(msg.message)}</div>
+          ${successFolders.length > 0
+            ? `<div style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:12px;">
+                ${successFolders.map(f => `<div style="color:var(--green);">✓ ${escHtml(f)}</div>`).join('')}
+               </div>` : ''}
+          <div style="width:100%;display:flex;flex-direction:column;gap:8px;">
+            <button class="done-btn-primary" onclick="showWorkspaceExplorer()">View Workspace</button>
+            <button class="done-btn-secondary" onclick="restartApp()">Start Another Workflow</button>
+          </div>`;
+        showScreen('screen-single-done');
+        lastWorkspaceData = { name: msg.path ? msg.path.split('/').slice(-2,-1)[0] : 'Workspace', folders: msg.createdFolders || [], path: msg.path || '~/Desktop/' };
+        setTimeout(() => {
+          $('doneOverlayTitle').textContent = 'Action Complete';
+          $('doneOverlaySub').textContent   = msg.message;
+          $('laptopDoneOverlay').classList.add('show');
+        }, 600);
+        addRecentWorkflow(msg.path ? msg.path.split('/').slice(-1)[0].replace(/_/g,' ') : 'Workflow');
+      } else {
+        const content = $('singleDoneContent');
+        content.innerHTML = `
+          <div style="width:72px;height:72px;border-radius:50%;background:rgba(248,113,113,.12);border:2px solid rgba(248,113,113,.5);display:flex;align-items:center;justify-content:center;font-size:30px;">⚠️</div>
+          <div style="font-size:20px;font-weight:800;text-align:center;">Something went wrong</div>
+          <div style="font-size:13px;color:var(--text2);text-align:center;max-width:260px;line-height:1.5;">${escHtml(msg.message)}</div>
+          <button class="done-btn-secondary" onclick="restartApp()">← Try Again</button>`;
+        showScreen('screen-single-done');
+      }
+      break;
+
+    case 'CANCELLED':
+      pendingRequestId = null;
+      showScreen('screen-home');
+      resetUnderstanding();
+      break;
+
+    case 'ERROR':
+      showParseError(msg.message || 'An unexpected error occurred.');
+      break;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   WEBSOCKET
+════════════════════════════════════════════════════════════════════════ */
+let ws = null;
+
+function connectWS(url) {
+  setChipConnecting();
+  try { ws = new WebSocket(url); } catch {
+    setChipDisconnected('Server unavailable');
+    return;
+  }
+
+  ws.addEventListener('open', () => {
+    ws.send(JSON.stringify({ type: 'REGISTER', role: 'PHONE' }));
+  });
+
+  ws.addEventListener('message', evt => {
+    let msg; try { msg = JSON.parse(evt.data); } catch { return; }
+    handleMessage(msg);
+  });
+
+  ws.addEventListener('close', () => {
+    macConnected = false;
+    setChipDisconnected('Server disconnected');
+    ws = null;
+    setTimeout(() => { if (!ws) connectWS(url); }, 4000);
+  });
+
+  ws.addEventListener('error', () => {
+    setChipDisconnected('Cannot reach server');
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   VOICE INPUT
+════════════════════════════════════════════════════════════════════════ */
+const voiceBtn    = $('voiceBtn');
+const cameraBtn   = $('cameraBtn');
+const cameraInput = $('cameraInput');
+
+voiceBtn.addEventListener('click', () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert("Voice input isn't available in this browser."); return; }
+
+  const rec = new SR();
+  rec.continuous = false;
+  rec.interimResults = false;
+
+  voiceBtn.classList.add('recording');
+  const pi = $('promptInput');
+  pi.placeholder = '🎙️ Listening…';
+  pi.value = '';
+
+  rec.onresult = e => { pi.value = e.results[0][0].transcript; };
+  rec.onerror  = e => {
+    if (e.error === 'not-allowed') alert('Microphone access denied.');
+    pi.placeholder = 'e.g. Prepare my Hackathon project';
+    voiceBtn.classList.remove('recording');
+  };
+  rec.onend = () => {
+    pi.placeholder = 'e.g. Prepare my Hackathon project';
+    voiceBtn.classList.remove('recording');
+  };
+  rec.start();
+});
+
+/* ════════════════════════════════════════════════════════════════════════
+   CAMERA / OCR
+════════════════════════════════════════════════════════════════════════ */
+cameraBtn.addEventListener('click', () => cameraInput.click());
+
+function clamp(v) { return Math.min(255, Math.max(0, v)); }
+
+function preprocessCanvas(img, variant) {
+  const canvas = document.createElement('canvas');
+  const ctx    = canvas.getContext('2d');
+  const scale  = 1.5;
+  canvas.width  = img.width  * scale;
+  canvas.height = img.height * scale;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data    = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+    data[i] = data[i+1] = data[i+2] = gray;
+  }
+  if (variant === 'contrast') {
+    const f = (259 * (128 + 255)) / (255 * (259 - 128));
+    for (let i = 0; i < data.length; i += 4) { data[i] = clamp(f*(data[i]-128)+128); data[i+1] = data[i]; data[i+2] = data[i]; }
+  } else if (variant === 'threshold') {
+    for (let i = 0; i < data.length; i += 4) { const v = data[i] > 140 ? 255 : 0; data[i] = data[i+1] = data[i+2] = v; }
+  } else if (variant === 'invert_threshold') {
+    for (let i = 0; i < data.length; i += 4) { const v = data[i] > 100 ? 0 : 255; data[i] = data[i+1] = data[i+2] = v; }
+  }
+  ctx.putImageData(imgData, 0, 0);
+  return canvas;
+}
+
+function scoreOCR(text, confidence) {
+  if (!text || !text.trim()) return 0;
+  let score = confidence;
+  const alpha = (text.match(/[a-zA-Z]/g) || []).length;
+  const ratio = alpha / text.length;
+  if (ratio < 0.5) score -= 40;
+  if (ratio > 0.8) score += 10;
+  const kw = ['create','workspace','folder','project','desktop','hackathon','prepare','set up'];
+  kw.forEach(w => { if (text.toLowerCase().includes(w)) score += 5; });
+  return score;
+}
+
+function cleanOCRText(text) {
+  return text.replace(/\n+/g, ' ').replace(/(^|\s)[^a-zA-Z0-9.,!?](\s|$)/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+cameraInput.addEventListener('change', async e => {
+  if (!e.target.files || !e.target.files.length) return;
+  const file = e.target.files[0];
+  const url  = URL.createObjectURL(file);
+
+  $('cameraPreviewImg').src = url;
+  $('cameraPromptInput').value = '';
+  $('cameraStatus').textContent = 'Analyzing image text…';
+  $('cameraPromptInput').style.display = 'none';
+  $('cameraSpinner').style.display = 'flex';
+  showScreen('screen-camera');
+
+  if (!window.Tesseract) {
+    $('cameraStatus').textContent = "Couldn't load OCR engine.";
+    $('cameraPromptInput').style.display = 'block';
+    $('cameraSpinner').style.display = 'none';
+    return;
+  }
+
+  const img = new Image();
+  img.onload = async () => {
+    try {
+      const variants = ['contrast','invert_threshold','threshold','grayscale'];
+      let best = { text: '', score: -1, confidence: 0 };
+      const worker = await Tesseract.createWorker('eng');
+      await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK });
+      for (const v of variants) {
+        const { data: { text, confidence } } = await worker.recognize(preprocessCanvas(img, v));
+        const score = scoreOCR(text, confidence);
+        if (score > best.score) best = { text, score, confidence };
+        if (confidence > 88 && score > 80) break;
+      }
+      await worker.terminate();
+      const final = cleanOCRText(best.text);
+      if (best.confidence < 40 || best.score < 20 || !final) {
+        $('cameraStatus').textContent = "Text wasn't clear enough.";
+      } else {
+        $('cameraStatus').textContent = `Text detected · ${Math.round(best.confidence)}% confidence`;
+        $('cameraPromptInput').value  = final;
+      }
+      $('cameraPromptInput').style.display = 'block';
+      $('cameraSpinner').style.display = 'none';
+    } catch {
+      $('cameraStatus').textContent = 'Error reading the text.';
+      $('cameraPromptInput').style.display = 'block';
+      $('cameraSpinner').style.display = 'none';
+    }
+  };
+  img.src = url;
+});
+
+$('btnCameraRetake').addEventListener('click', () => {
+  $('cameraInput').value = '';
+  showScreen('screen-home');
+  cameraInput.click();
+});
+
+$('btnCameraUse').addEventListener('click', () => {
+  const prompt = $('cameraPromptInput').value.trim() || 'Create a workspace for this project';
+  $('promptInput').value = prompt;
+  showScreen('screen-home');
+  $('startBtn').click();
+});
+
+/* ════════════════════════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════════════════════════ */
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+window.showWorkspaceExplorer = showWorkspaceExplorer;
+
+/* ════════════════════════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════════════════════════ */
+(function boot() {
+  renderRecent();
+
+  const proto = window.location.protocol;
+  if (proto === 'file:') {
+    $('serverSetup').classList.add('visible');
+    setChipDisconnected('Not connected (demo mode)');
+    $('serverConnectBtn').addEventListener('click', () => {
+      const url = $('serverUrlInput').value.trim();
+      if (!url) return;
+      $('serverSetup').classList.remove('visible');
+      connectWS(url);
+    });
+    return;
+  }
+  const wsUrl = (proto === 'https:' ? 'wss://' : 'ws://') + window.location.host;
+  connectWS(wsUrl);
+})();
+/* ════════════════════════════════════════════════════════════════════════
+   V1.0 RELAY CLIENT — Remote Mac Access
+   Fixed: chip state persistence, startRelayMode sync, _handleServerMsg hook,
+          proper WS reconnect, disconnectRelay text reset.
+════════════════════════════════════════════════════════════════════════ */
+(function() {
+  // ── Relay state ──────────────────────────────────────────────────────────
+  let relayWs        = null;
+  let sessionToken   = null;
+  let pairedMacName  = null;
+  let relayUrl_      = 'ws://localhost:3100';
+  let reconnecting   = false;
+  let intentionalClose = false;   // set true before explicit close to suppress reconnect
+
+  // ── Public state getter (used by tests and external code) ────────────────
+  window.getRelayState = function() {
+    return {
+      paired:      !!sessionToken,
+      macName:     pairedMacName,
+      wsOpen:      relayWs && relayWs.readyState === WebSocket.OPEN,
+      sessionToken // intentionally exposed for UI, not security-critical
+    };
+  };
+
+  // ── Update home screen remote-mac chip ──────────────────────────────────
+  // This is the SINGLE source of truth for what the chip shows.
+  // Call it any time state changes OR when navigating back to home.
+  function updateRemoteMacChip(state, macName) {
+    const chip = document.getElementById('remoteMacChip');
+    const dot  = document.getElementById('remoteMacDot');
+    const txt  = document.getElementById('remoteMacText');
+    if (!chip) return;
+
+    if (state === 'connected') {
+      chip.style.display = 'flex';
+      dot.style.background = '#34d399';
+      dot.style.boxShadow  = '0 0 6px rgba(52,211,153,0.6)';
+      txt.textContent = '● ' + (macName || pairedMacName || 'Mac') + ' · Connected';
+    } else if (state === 'connecting') {
+      chip.style.display = 'flex';
+      dot.style.background = '#f59e0b';
+      dot.style.boxShadow  = '0 0 6px rgba(245,158,11,0.5)';
+      txt.textContent = '◌ Connecting…';
+    } else if (state === 'reconnecting') {
+      chip.style.display = 'flex';
+      dot.style.background = '#f59e0b';
+      dot.style.boxShadow  = '0 0 6px rgba(245,158,11,0.5)';
+      txt.textContent = '◌ Reconnecting…';
+    } else {
+      // DISCONNECTED — hide chip and reset text so it's clean next time
+      chip.style.display = 'none';
+      dot.style.background = '#7c5cfc';
+      dot.style.boxShadow  = '';
+      txt.textContent = 'No Mac Paired';
+    }
+  }
+
+  // ── Sync chip to current relay state (call when navigating to home) ──────
+  function syncRelayChip() {
+    if (sessionToken && relayWs && relayWs.readyState === WebSocket.OPEN) {
+      updateRemoteMacChip('connected', pairedMacName);
+    } else if (sessionToken && reconnecting) {
+      updateRemoteMacChip('reconnecting');
+    } else if (!sessionToken && !reconnecting) {
+      updateRemoteMacChip('disconnected');
+    }
+    // If sessionToken set but WS not open yet, leave chip as-is (state already set)
+  }
+  window._syncRelayChip = syncRelayChip;  // allow testing
+
+  // ── Update device screen ─────────────────────────────────────────────────
+  function updateDeviceScreen(macName, pairedAt) {
+    const el = (id) => document.getElementById(id);
+    if (el('deviceCardName'))   el('deviceCardName').textContent   = macName || 'My Mac';
+    if (el('deviceCardStatus')) el('deviceCardStatus').textContent = '● Connected via Relay';
+    if (el('devicePairedAt'))   el('devicePairedAt').textContent   = pairedAt
+      ? new Date(pairedAt).toLocaleTimeString()
+      : new Date().toLocaleTimeString();
+    if (el('deviceConnType'))   el('deviceConnType').textContent   = 'KRIYA Relay';
+    const dot = el('deviceCardDot');
+    if (dot) { dot.style.background = '#34d399'; dot.style.boxShadow = '0 0 8px rgba(52,211,153,0.6)'; }
+  }
+
+  function setDeviceDisconnected() {
+    const el = (id) => document.getElementById(id);
+    if (el('deviceCardStatus')) el('deviceCardStatus').textContent = '○ Disconnected';
+    const dot = el('deviceCardDot');
+    if (dot) { dot.style.background = '#6b7280'; dot.style.boxShadow = ''; }
+  }
+
+  // ── Relay forward: phone → relay → mac ──────────────────────────────────
+  function relayForward(obj) {
+    if (!relayWs || relayWs.readyState !== WebSocket.OPEN || !sessionToken) return false;
+    relayWs.send(JSON.stringify({ type: 'RELAY_MSG', sessionToken, payload: obj }));
+    return true;
+  }
+  window._relayForward = relayForward;
+  window._relayIsActive = function() { return !!(sessionToken && relayWs && relayWs.readyState === WebSocket.OPEN); };
+
+  // ── Hook into existing server message handler ────────────────────────────
+  // We capture messages coming from Mac via relay and route them through the
+  // existing handleMessage() path (the same function that handles local WS).
+  // We expose _handleServerMsg so relay.onmessage can dispatch to it.
+  // This is set AFTER the main script runs (the main script defines handleMessage).
+  // We use a deferred assignment to avoid ordering issues.
+  window._setRelayMsgHandler = function(fn) {
+    window._handleServerMsg = fn;
+  };
+
+  // ── startRelayMode: "Start Command" from device screen ───────────────────
+  // Returns to home screen AND re-asserts the relay chip state.
+  window.startRelayMode = function() {
+    // Re-assert the connected chip BEFORE navigating (so it's correct when home appears)
+    if (sessionToken) {
+      updateRemoteMacChip('connected', pairedMacName);
+      // Also update the main connection chip to show relay mode
+      const serverChip = document.getElementById('connChip');
+      const serverChipTxt = document.getElementById('connChipText');
+      if (serverChip)    serverChip.className = 'conn-chip connected';
+      if (serverChipTxt) serverChipTxt.textContent = '● ' + (pairedMacName || 'Mac') + ' via Relay';
+    }
+    showScreen('screen-home');
+  };
+
+  // ── disconnectRelay: clean teardown ─────────────────────────────────────
+  window.disconnectRelay = function() {
+    intentionalClose = true;
+    if (relayWs) {
+      try { relayWs.send(JSON.stringify({ type: 'PHONE_DISCONNECT', sessionToken })); } catch {}
+      relayWs.close();
+    }
+    relayWs = null; sessionToken = null; pairedMacName = null;
+    reconnecting = false; intentionalClose = false;
+    updateRemoteMacChip('disconnected');
+    setDeviceDisconnected();
+    showScreen('screen-home');
+    const pStatus = document.getElementById('pairStatus');
+    if (pStatus) pStatus.textContent = '';
+    // Also reset server chip to server mode
+    const serverChipTxt = document.getElementById('connChipText');
+    if (serverChipTxt && serverChipTxt.textContent.includes('via Relay'))
+      serverChipTxt.textContent = 'Connected to KRIYA';
+  };
+
+  // ── Internal: connect relay WS and attach handlers ────────────────────────
+  function connectRelayWs(url, pairingToken) {
+    intentionalClose = false;
+    if (relayWs) try { relayWs.close(); } catch {}
+    relayWs = new WebSocket(url);
+    relayUrl_ = url;
+    const pStatus = document.getElementById('pairStatus');
+
+    relayWs.onopen = () => {
+      reconnecting = false;
+      if (pStatus) pStatus.textContent = '◌ Sending pairing request…';
+      relayWs.send(JSON.stringify({ type: 'PAIR_REQUEST', pairingToken }));
+    };
+
+    relayWs.onmessage = (evt) => {
+      let msg;
+      try { msg = JSON.parse(evt.data); } catch { return; }
+
+      // ── PAIR_CONFIRM ─────────────────────────────────────────────────────
+      if (msg.type === 'PAIR_CONFIRM') {
+        sessionToken  = msg.sessionToken;
+        pairedMacName = msg.macName || 'My Mac';
+
+        if (pStatus) pStatus.textContent = '✅ Paired with ' + pairedMacName;
+        updateRemoteMacChip('connected', pairedMacName);
+        updateDeviceScreen(pairedMacName, msg.pairedAt);
+
+        const inp = document.getElementById('pairingTokenInput');
+        if (inp) inp.value = '';
+
+        // Navigate to device screen
+        setTimeout(() => showScreen('screen-device'), 600);
+        return;
+      }
+
+      // ── RELAY_MSG (Mac → Phone) ──────────────────────────────────────────
+      if (msg.type === 'RELAY_MSG' && msg.payload) {
+        // Dispatch through the existing phone message handler
+        if (typeof window._handleServerMsg === 'function') {
+          window._handleServerMsg(msg.payload);
+        }
+        return;
+      }
+
+      // ── PEER_DISCONNECTED ────────────────────────────────────────────────
+      if (msg.type === 'PEER_DISCONNECTED') {
+        setDeviceDisconnected();
+        updateRemoteMacChip('disconnected');
+        sessionToken = null; pairedMacName = null;
+        showScreen('screen-home');
+        const chip = document.getElementById('connChip');
+        const ct   = document.getElementById('connChipText');
+        if (chip) chip.className = 'conn-chip disconnected';
+        if (ct)   ct.textContent = 'Mac Disconnected';
+        return;
+      }
+
+      // ── RELAY_ERROR ──────────────────────────────────────────────────────
+      if (msg.type === 'RELAY_ERROR') {
+        if (pStatus) pStatus.textContent = '✗ ' + (msg.error || 'Relay error');
+        // Only reset chip if we're not yet paired
+        if (!sessionToken) updateRemoteMacChip('disconnected');
+        return;
+      }
+    };
+
+    relayWs.onerror = () => {
+      if (!sessionToken) {
+        if (pStatus) pStatus.textContent = '✗ Cannot connect to relay. Is it running?';
+        updateRemoteMacChip('disconnected');
+      }
+    };
+
+    relayWs.onclose = () => {
+      if (intentionalClose) { intentionalClose = false; return; }
+
+      if (sessionToken) {
+        // We have a live session but the WS dropped — try to reconnect
+        reconnecting = true;
+        updateRemoteMacChip('reconnecting');
+        if (pStatus) pStatus.textContent = '◌ Reconnecting…';
+        // Reconnect after 3s (relay is still up, WS just dropped)
+        // Note: after reconnect we'd need to re-pair since pairingToken is consumed.
+        // For now, notify user to re-pair.
+        setTimeout(() => {
+          if (reconnecting && sessionToken) {
+            // Session token may still be valid if relay restarted — try pinging
+            reconnecting = false;
+            updateRemoteMacChip('disconnected');
+            setDeviceDisconnected();
+            const oldMac = sessionToken ? pairedMacName : null;
+            sessionToken = null; pairedMacName = null;
+            showScreen('screen-home');
+            if (pStatus) pStatus.textContent = oldMac
+              ? '⚠ Disconnected from ' + oldMac + '. Re-pair to reconnect.'
+              : '';
+          }
+        }, 3000);
+      } else {
+        // Not paired — just mark disconnected
+        updateRemoteMacChip('disconnected');
+        if (pStatus) pStatus.textContent = 'Disconnected from relay.';
+      }
+    };
+  }
+
+  // ── Main pairing entry point ─────────────────────────────────────────────
+  window.startRelayPairing = function() {
+    const urlInput  = document.getElementById('relayUrlInput');
+    const tokenInput= document.getElementById('pairingTokenInput');
+    const pStatus   = document.getElementById('pairStatus');
+    const url   = (urlInput?.value || '').trim()   || 'ws://localhost:3100';
+    const token = (tokenInput?.value || '').trim();
+
+    if (!token) {
+      if (pStatus) pStatus.textContent = '⚠ Please enter the pairing token from your Mac.';
+      return;
+    }
+
+    if (pStatus) pStatus.textContent = '◌ Connecting to relay…';
+    updateRemoteMacChip('connecting');
+    connectRelayWs(url, token);
+  };
+
+  // ── Handle ?pairingToken= in URL (from QR scan) ──────────────────────────
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const qt = params.get('pairingToken');
+    if (qt) {
+      const inp = document.getElementById('pairingTokenInput');
+      if (inp) inp.value = qt;
+      setTimeout(() => showScreen('screen-pair'), 400);
+    }
+  })();
+
+  // ── Sync chip when home screen becomes active ─────────────────────────────
+  // We patch showScreen (which is defined earlier in the same script) to call
+  // syncRelayChip whenever the home screen is shown.
+  const _origShowScreen = window.showScreen;
+  if (typeof _origShowScreen === 'function') {
+    window.showScreen = function(id) {
+      _origShowScreen(id);
+      if (id === 'screen-home') syncRelayChip();
+    };
+  }
+})();
+</script>
+</body>
+</html>

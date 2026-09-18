@@ -1,0 +1,21 @@
+{
+  "name": "carryon",
+  "version": "1.0.0",
+  "description": "KRIYA — From Intent to Action. Remote Mac control with secure relay.",
+  "main": "server/server.js",
+  "scripts": {
+    "server": "node server/server.js",
+    "relay":  "node server/relay.js",
+    "agent":  "node server/mac-agent.js",
+    "agent:relay": "node server/mac-agent.js --relay",
+    "test":   "node server/test-integration.js"
+  },
+  "dependencies": {
+    "ollama": "^0.6.3",
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
